@@ -137,11 +137,12 @@ with torch.inference_mode():
 #  Using nn.L1Loss function for the loss problem. Creates a criterion that measures the mean absolute error (MAE)
 
 #  Creating a loss function for the model
-loss_fn = nn.L1Loss()
-print(loss_fn)
+loss_funcn = nn.L1Loss()
 
 #  Creating a optimizer for the model
 #  Using SGD stochastic (random) gradient descent 
+optimizer = torch.optim.SGD(params=model_0.paramters(), lr=0.01)
+
 
 
 
