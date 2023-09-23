@@ -69,32 +69,83 @@ def plot_predictions(train_data=X_train,
         plt.scatter(test_data, predictions, c='r', s=4, label="Predictions")
     
    
-    # %% RUN CELL
+    # % RUN CELL
     
     
-    plot_predictions()
+    # plot_predictions()
     
     # First Linear Regression MODEL =======
     # FORMULA ---- y = a + bx ----
     # class for linear regression model
     # What the model does is start with random values. looks at trainign data and adujust weight + bias to correlate to the correct data values 
     
-    class LinearRegressionModel(nn.Module): # Pytorch comanly starts with nn.Module
-        def __init__(self):
-            # super().__init__()
-            self.weight =  nn.Parameter(torch.randn(1,
-                                                    requires_grad=True, 
-                                                    dtype=torch.float))
-            self.bias = nn.Parameter(torch.randn(1, 
+class LinearRegressionModel(nn.Module): # Pytorch comanly starts with nn.Module
+    def __init__(self):
+        super().__init__()
+        self.weight =  nn.Parameter(torch.randn(1,
                                                 requires_grad=True, 
                                                 dtype=torch.float))
-            
-            
-            # Forward method
-            def forward(self, x: torch.Tensor) -> torch.Tensor: 
-                return self.weight * x + self.bias # Linear regression formula
+        self.bias = nn.Parameter(torch.randn(1, 
+                                            requires_grad=True, 
+                                            dtype=torch.float))
         
-    
+        
+        # Forward method
+    def forward(self, x: torch.Tensor) -> torch.Tensor: 
+        return self.weight * x + self.bias # Linear regression formula
+        
+# Check data inside model using .parameters() -------
+torch.manual_seed(42)
+
+# Creating instance of the model (subclass (LinearRegressionModel))
+model_0 = LinearRegressionModel()
+
+# print(model_0.state_dict())
+# tensor([0.3367], requires_grad=True), Parameter containing:
+# tensor([0.1288], requires_grad=True)]
+
+# -----  Making predictions with random numbers using 'torch.inference_mode()' -------
+
+# print(X_test)
+
+# TURNS OFF GRADIENT TRACKING USING INFERENCE MODE (SPEEDS UP TESTING) -------------
+with torch.inference_mode():
+    y_prediction = model_0(X_test)
+
+# print(y_prediction, 'correct', y_test)
+# INCORRECT:  tensor([[0.3982],
+#                     [0.4049],
+#                     [0.4116],
+#                     [0.4184],
+#                     [0.4251],
+#                     [0.4318],
+#                     [0.4386],
+#                     [0.4453],
+#                     [0.4520],
+#                     [0.4588]])
+
+# % VERY FAR OFF ADD % TO RUN CELL
+# plot_predictions(predictions=y_prediction)
+
+
+
+### ===================== TRAINING THE MODEL ============================= ###
+#  Measure how off your predictions are to the correct data is done by using a loss function (Commonly called a cost function or criterion depedning on the field).
+#  Loss function: A function to measure of off your models predictions are to the ideal outputs (Lower value = better predictions)
+#  Optimizer: Takes into account the loss value of a model and adjuts the model's parameters (CURRENTLY Weight and Bias) [SEEN BELOW]
+#  print(model_0.state_dict()) : OrderedDict([('weight', tensor([0.3367])), ('bias', tensor([0.1288]))])
+#  Using nn.L1Loss function for the loss problem. Creates a criterion that measures the mean absolute error (MAE)
+
+#  Creating a loss function for the model
+loss_fn = nn.L1Loss()
+print(loss_fn)
+
+#  Creating a optimizer for the model
+#  Using SGD stochastic (random) gradient descent 
+
+
+
+
 
 
 
