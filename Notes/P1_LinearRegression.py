@@ -131,17 +131,17 @@ with torch.inference_mode():
 
 ### ===================== TRAINING THE MODEL ============================= ###
 #  Measure how off your predictions are to the correct data is done by using a loss function (Commonly called a cost function or criterion depedning on the field).
-#  Loss function: A function to measure of off your models predictions are to the ideal outputs (Lower value = better predictions)
+#  Loss/cost function: A function to measure of off your models predictions are to the ideal outputs (Lower value = better predictions)
 #  Optimizer: Takes into account the loss value of a model and adjuts the model's parameters (CURRENTLY Weight and Bias) [SEEN BELOW]
 #  print(model_0.state_dict()) : OrderedDict([('weight', tensor([0.3367])), ('bias', tensor([0.1288]))])
 #  Using nn.L1Loss function for the loss problem. Creates a criterion that measures the mean absolute error (MAE)
 
-#  Creating a loss function for the model
+#  Creating a loss/cost function for the model
 loss_funcn = nn.L1Loss()
 
 #  Creating a optimizer for the model
 #  Using SGD stochastic (random) gradient descent 
-optimizer = torch.optim.SGD(params=model_0.paramters(), lr=0.01)
+optimizer = torch.optim.SGD(params=model_0.parameters(), lr=0.01, momentum=0.6)
 
 #  Building the trianing and testing loop for the model
 #  1. Forward Propagation (Using the models forward function)
@@ -150,9 +150,10 @@ optimizer = torch.optim.SGD(params=model_0.paramters(), lr=0.01)
 #  4. Backpropagation
 #  5. Optimizer (Gradient descent)
 
-
+# %%
 # Each "Epoch" is a term for a the amount of times you loop through the data
-epochs = 1
+torch.manual_seed(42)
+epochs = 100
 
 ### ==== TRAINING === ###
 # Looping throug the data
@@ -165,16 +166,32 @@ for epoch in range(epochs):
     
     # Calculate loss
     loss = loss_funcn(y_pred, y_train)
+    # Can view loss value each iteration
+    # print('loss value', {loss})
     
     # Optimizer zero grad
     # Sets optimizer to zero each time to avoid conflicts 
     optimizer.zero_grad()
     
-    # Backpropagation on loss with respect to parameters of the model
+    # Backpropagation on loss with respect to parameters of the model to figure out gradient descent of every node
     loss.backward()
     
     # Perform gradient descent
     optimizer.step()
+    
+    # TESTING
+    model_0.eval()
+# Show's tensor and bias after EPOCH iteration amount
+# print(model_0.state_dict())
+
+# Testing data stats
+with torch.inference_mode():
+    y_preds_updated = model_0(X_test)
+
+# Plot's predictions vs old predictions currently only works on interactive window.
+print(plot_predictions(predictions=y_prediction))
+print(plot_predictions(predictions=y_preds_updated))
+
     
     
     
