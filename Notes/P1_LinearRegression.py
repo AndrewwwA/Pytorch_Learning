@@ -143,6 +143,41 @@ loss_funcn = nn.L1Loss()
 #  Using SGD stochastic (random) gradient descent 
 optimizer = torch.optim.SGD(params=model_0.paramters(), lr=0.01)
 
+#  Building the trianing and testing loop for the model
+#  1. Forward Propagation (Using the models forward function)
+#  2. Calculate the loss (comparing forward propagation predictions to the actual data's answer)
+#  3. Optimizer zero grad
+#  4. Backpropagation
+#  5. Optimizer (Gradient descent)
+
+
+# Each "Epoch" is a term for a the amount of times you loop through the data
+epochs = 1
+
+### ==== TRAINING === ###
+# Looping throug the data
+for epoch in range(epochs):
+    # Setting the model to training mode
+    model_0.train() # Set's all parametgers that require graident to true
+    
+    # Forward Pass
+    y_pred = model_0(X_train)
+    
+    # Calculate loss
+    loss = loss_funcn(y_pred, y_train)
+    
+    # Optimizer zero grad
+    # Sets optimizer to zero each time to avoid conflicts 
+    optimizer.zero_grad()
+    
+    # Backpropagation on loss with respect to parameters of the model
+    loss.backward()
+    
+    # Perform gradient descent
+    optimizer.step()
+    
+    
+    
 
 
 
@@ -155,3 +190,4 @@ optimizer = torch.optim.SGD(params=model_0.paramters(), lr=0.01)
 
 
 
+# %%
