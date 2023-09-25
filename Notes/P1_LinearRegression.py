@@ -179,18 +179,56 @@ for epoch in range(epochs):
     # Perform gradient descent
     optimizer.step()
     
-    # TESTING
+    # Turns off important things (Im no sure what) when testing your model (speeds up the testing process)
     model_0.eval()
-# Show's tensor and bias after EPOCH iteration amount
-# print(model_0.state_dict())
+    
+    # === TESTING === PUT IT ALL IN THE SAME FUNCTON FOR STARTING GENRALLY THEY ARE IN FUNCTIONS
+    # Turns off gradient tracking + more 
+    with torch.inference_mode():
+        # Forward propagation:
+        test_prop = model_0(X_test)
+        
+        # Calculate cost/loss
+        test_cost = loss_funcn(test_prop, y_test)
+    if epoch % 10 == 0:
+        print(f"Epoch: {epoch} | 'info': {model_0.state_dict()} | test loss: {test_cost}")
+    if epoch == 90:  # Can change depending on EPOCH AMOUNT TO HAVE A FINAL GRAPH (Currently set for 100  EPOCHS)
+        print(plot_predictions(predictions=test_prop))
 
-# Testing data stats
-with torch.inference_mode():
-    y_preds_updated = model_0(X_test)
+        
+### Saving the model ###
+# 1: torch.save() - allows you to save a pytorch object in python's pickle format (From python)
+# 2: torch.load() - allows you to load a saved pytorch object 
+# 3: torch.nn.Module.load_state_dict() = allows you to load a model's saved state dict
 
-# Plot's predictions vs old predictions currently only works on interactive window.
-print(plot_predictions(predictions=y_prediction))
-print(plot_predictions(predictions=y_preds_updated))
+# # Saving this model
+from pathlib import Path
+
+# # Creating model directory
+MODEL_PATH = Path('models')
+# MODEL_PATH.mkdir(parents=True, exist_ok=True)
+
+# # Create model save path
+Model_NAME = "01_Grad_Desc.pth"
+MODEL_SAVE_PATH = MODEL_PATH / Model_NAME
+
+# print(MODEL_SAVE_PATH)
+# # models\01_Grad_Desc.pth
+
+# # Saving model State Dict (Models file/directory)
+# torch.save(model_0.state_dict(), MODEL_SAVE_PATH)
+
+
+### ========= LOADING MODELS ====== ###
+
+# model_loaded = LinearRegressionModel()
+# model_loaded.load_state_dict(torch.load(MODEL_SAVE_PATH))
+# model_loaded.eval()
+
+# #  YOu can see that the model saved it's previous good Weight and bias from before
+
+# print(model_loaded.state_dict())
+# OrderedDict([('weight', tensor([0.7014])), ('bias', tensor([0.3019]))])
 
     
     
