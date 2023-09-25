@@ -209,11 +209,11 @@ MODEL_PATH = Path('models')
 # MODEL_PATH.mkdir(parents=True, exist_ok=True)
 
 # # Create model save path
-Model_NAME = "01_Grad_Desc.pth"
+Model_NAME = "0_Grad_Desc_0.pth"
 MODEL_SAVE_PATH = MODEL_PATH / Model_NAME
 
 # print(MODEL_SAVE_PATH)
-# # models\01_Grad_Desc.pth
+# # models\0_Grad_Desc_0.pth
 
 # # Saving model State Dict (Models file/directory)
 # torch.save(model_0.state_dict(), MODEL_SAVE_PATH)
