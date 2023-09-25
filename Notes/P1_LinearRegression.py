@@ -223,7 +223,6 @@ MODEL_SAVE_PATH = MODEL_PATH / Model_NAME
 
 # model_loaded = LinearRegressionModel()
 # model_loaded.load_state_dict(torch.load(MODEL_SAVE_PATH))
-# model_loaded.eval()
 
 # #  YOu can see that the model saved it's previous good Weight and bias from before
 
