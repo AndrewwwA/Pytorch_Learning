@@ -15,14 +15,14 @@ import pandas as pd
 circles = pd.DataFrame({"X1": X[:, 0],
                         "X2": X[:, 1],
                         "label": y})
-circles.head(10)
+circles.head(10) 
 
 # Visualize with matplotlib
 import matplotlib.pyplot as plt
-plt.scatter(x=X[:, 0],
-            y=X[:, 1],
-            c=y,
-            cmap=plt.cm.RdYlBu)
+# plt.scatter(x=X[:, 0],
+#             y=X[:, 1],
+#             c=y,
+#             cmap=plt.cm.RdYlBu)
 
 # Creating tensors from X and y values
 # print(X.shape, y.shape)
@@ -228,10 +228,10 @@ plt.title('Train')
 class CircleModelV3(nn.Module):
     def __init__(self):
         super().__init__()
-        
-        self.layer1 = nn.Linear(in_features=2, out_features=10)
-        self.layer2 = nn.Linear(in_features=10, out_features=10)
-        self.layer3 = nn.Linear(in_features=10, out_features=1)
+        # Can be improved quicker drastically by increasing in and out features of hiddn layers
+        self.layer1 = nn.Linear(in_features=2, out_features=20)
+        self.layer2 = nn.Linear(in_features=20, out_features=20)
+        self.layer3 = nn.Linear(in_features=20, out_features=1)
         self.relu = nn.ReLU() #Non-linear activation function
     
     def forward(self, x): # Uses a relu activation after every layer
@@ -253,7 +253,7 @@ torch.cuda.manual_seed(42)
 X_train, y_train = X_train.to(device), y_train.to(device)
 X_test, y_test = X_test.to(device), y_test.to(device)
 
-epochs = 2000 # Should recieve 100% on 1999/2000 epoch
+epochs = 1000 # Should recieve 100% on 2000 epoch with only 10 in and out features about 1200 on 20 features
 
 for epoch in range(epochs):
     model_3.train()
@@ -286,6 +286,17 @@ for epoch in range(epochs):
             test_acc = accuracy_func(test_pred, y_test)
             print(f' epoch: {epoch} | loss: {test_loss} | accuracy {test_acc}')
 
+# Visualize the model trained with {epoch} epochs
+
+model_3.eval()
+with torch.inference_mode():
+    y_preds = torch.round(torch.sigmoid(model_3(X_test))).squeeze()
+    
+# Plotting descision boundaries
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.title('Train')
+plot_decision_boundary(model_3, X_train, y_train)    
             
 
  
