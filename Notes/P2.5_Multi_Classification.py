@@ -141,5 +141,16 @@ plot_decision_boundary(model_0, X_test, y_pred)
 # F1-score
 # Confusion matrix
 # Classification report
+
+### Saving this model ###
+# from pathlib import Path
+
+# MODEL_PATH = Path('models')
+
+# Model_NAME = "02_MultiClass_Classification.pth"
+# MODEL_SAVE_PATH = MODEL_PATH / Model_NAME
+
+# torch.save(model_0.state_dict(), MODEL_SAVE_PATH)
+
             
 
