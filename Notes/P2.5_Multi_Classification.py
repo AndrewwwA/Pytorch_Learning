@@ -133,5 +133,13 @@ plt.figure(figsize=(12, 6))
 plt.subplot(1, 2, 1)
 plt.title("Train")
 plot_decision_boundary(model_0, X_test, y_pred)          
+
+# Other ways to evalute the model (Use torchmetrics to use these quickly)
+#  Accuracy - out of 100 samples, how many does the model get correct
+# Precision
+# Recall
+# F1-score
+# Confusion matrix
+# Classification report
             
 
