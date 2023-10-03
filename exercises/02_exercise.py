@@ -268,3 +268,10 @@ plt.subplot(1, 2, 2)
 plt.title("Test")
 plot_decision_boundary(model_1, X_test, y_test)
 
+# from pathlib import Path
+
+# MODEL_PATH = Path('models')
+
+# Model_NAME = "02_MultiClass_AdamOptim.pth"
+# MODEL_SAVE_PATH = MODEL_PATH / Model_NAME
+# torch.save(model_0.state_dict(), MODEL_SAVE_PATH)
