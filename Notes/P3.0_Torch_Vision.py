@@ -70,8 +70,8 @@ test_batches = DataLoader(batch_size=BATCH_SIZE,
                           dataset=test_data)
 
 train_features_batch, train_labels_batch = next(iter(train_batches))
-print()
-print(train_features_batch.shape, train_labels_batch.shape)
+# print()
+# print(train_features_batch.shape, train_labels_batch.shape)
 
 ### Makign a baseline model ###
 # Simple model to improve abpon with subsequent models/experiments 
@@ -286,6 +286,7 @@ loss_func = nn.CrossEntropyLoss()
 Optimizer = torch.optim.SGD(params=model_1.parameters(),
                             lr=0.1)
 
+torch.manual_seed(42)
 ### Function trainign and testing loops ###
 def training_step(model,
                  dataloader,
@@ -319,6 +320,8 @@ def training_step(model,
     
     print(f"Train loss: {train_loss:.5f} | train acc {train_acc:.3f}% ")
 
+torch.manual_seed(42)
+
 def testing_step(model,
                  dataloader,
                  loss_func,
@@ -350,9 +353,9 @@ def testing_step(model,
 torch.manual_seed(42)
 
 # Time 
-start_time = timer()
+# start_time = timer()
 
-epochs = 3
+epochs = 0 # Currently zero to avoid starting
 
 for epoch in tqdm(range(epochs)):
     print(f"Epoch: {epoch}\n---------")
@@ -367,8 +370,73 @@ for epoch in tqdm(range(epochs)):
                  loss_func=loss_func,
                  accuracy_func=accuracy_fn,
                  device=device)
-end_time = timer()
-train_time(start_time, end_time)
+# end_time = timer()
+# train_time(start_time, end_time)
+
+
+### ===== Building a Convolution Neural Network (CNN) ===== ####
+# CNN's are VERY good at findind patterns in visual data (like this one lol)
+
+class FashionMNISTModelV3(nn.Module):
+    def __init__(self, 
+                 in_features,
+                 hidden_features,
+                 out_features):
+        super().__init__()
+        self.conv_block_1 = nn.Sequential(
+            nn.Conv2d(in_channels=in_features,
+                      out_channels=out_features,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=hidden_features,
+                      out_channels=out_features,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2)
+        )
+            
+        self.conv_block_2 = nn.Sequential(
+            nn.Conv2d(in_channels=hidden_features,
+                      out_channels=hidden_features,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=hidden_features,
+                      out_channels=hidden_features,
+                      kernel_size=3,
+                      stride=1,
+                      padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=2)
+        )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(in_features=hidden_features*0,
+                      out_features=out_features)
+        )
+    def forward(self, x):
+        # return self.classifier(self.conv_block_2(self.conv_block_1(x)))
+        x = self.conv_block_1(x)
+        print(x.shape)
+        x = self.conv_block_2(x)
+        print(x.shape)
+        x = self.classifier(x)
+        print(x.shape)
+        return x
+
+torch.manual_seed(42)
+model_2 = FashionMNISTModelV3(in_features=1,
+                              hidden_features=10,
+                              out_features=10)
+print(model_2)
+            
+            
+        
 
         
         
