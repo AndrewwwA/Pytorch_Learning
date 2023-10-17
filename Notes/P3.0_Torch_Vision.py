@@ -561,7 +561,17 @@ fig, ax = plot_confusion_matrix(
     
 )
 
+### Save and load model ###
+from pathlib import Path
 
+MODEL_PATH = Path("../models")
+
+MODEL_NAME = "03_PyVision_ConvNN_V2.pth"
+MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
+
+# SAving model state dict
+torch.save(obj=model_2.state_dict(),
+           f=MODEL_SAVE_PATH)
 
         
         
