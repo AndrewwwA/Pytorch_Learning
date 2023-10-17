@@ -525,6 +525,44 @@ print(stats)
 # Accuracy but instintivly it increases training time by upwards of 4-5 seconds on my hardware. Then changing kernal size didn't do much for performance nor
 # training time... minimal changes
 
+# %%
+### Making a confusion matrix #### (Using torchmetrics confusion matrix) (Plotting the data using mlxtend.plotting.plot_confusion_matrix)
+from tqdm.auto import tqdm
+
+# Make predictions with trained model\
+y_preds = []
+model_2.eval()
+with torch.inference_mode():
+    for X, y in tqdm(test_batches, desc="Predicitions..."):
+        X, y = X.to(device), y.to(device)
+        y_logits = model_2(X)
+        # Turn pred to probs -> labels
+        y_pred = torch.softmax(y_logits.squeeze(), dim=0)
+        y_labels = torch.argmax(y_pred, dim=1)
+        # Put prediction on CPU for eval (matpltolib)
+        y_preds.append(y_labels.cpu())
+        
+y_pred_tensor = torch.cat(y_preds)
+
+from torchmetrics import ConfusionMatrix
+from mlxtend.plotting import plot_confusion_matrix
+
+# Setup instance
+classNames = test_data.classes
+print(test_data.targets)
+confmat = ConfusionMatrix(task='multiclass', num_classes=10)
+confmat_tensor = confmat(preds=y_pred_tensor,
+                         target=test_data.targets)
+# Plot matrix
+fig, ax = plot_confusion_matrix(
+    conf_mat=confmat_tensor.numpy(), #Matplotplib likes numpy
+    class_names=classNames,
+    figsize=(9, 6)
+    
+)
+
+
+
         
         
         
