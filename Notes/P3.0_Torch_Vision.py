@@ -573,6 +573,12 @@ MODEL_SAVE_PATH = MODEL_PATH / MODEL_NAME
 torch.save(obj=model_2.state_dict(),
            f=MODEL_SAVE_PATH)
 
+### LOAD MODEL ###
+# loaded_Model = FashionMNISTModelV3(in_features=1,
+#                                    hidden_features=10,
+#                                    out_features=10)
+# loaded_Model.load_state_dict(torch.load(f=MODEL_SAVE_PATH))
+
         
         
         
