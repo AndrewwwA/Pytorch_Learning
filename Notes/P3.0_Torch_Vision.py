@@ -219,12 +219,15 @@ torch.manual_seed(42)
 def eval_model(model: torch.nn.Module,
                data_loader,
                loss_func,
-               accuracy_func):
+               accuracy_func,
+               device):
     """Returns a dictonary containg results of model's predictio"""
     loss, acc = 0, 0
+    model.to(device)
     model.eval()
     with torch.inference_mode():
         for X, y in tqdm(data_loader):
+            X, y = X.to(device), y.to(device)
             # forward pass
             y_pred = model(X)
             
@@ -385,13 +388,13 @@ class FashionMNISTModelV3(nn.Module):
         super().__init__()
         self.conv_block_1 = nn.Sequential(
             nn.Conv2d(in_channels=in_features,
-                      out_channels=out_features,
+                      out_channels=hidden_features,
                       kernel_size=3,
                       stride=1,
                       padding=1),
             nn.ReLU(),
             nn.Conv2d(in_channels=hidden_features,
-                      out_channels=out_features,
+                      out_channels=hidden_features,
                       kernel_size=3,
                       stride=1,
                       padding=1),
@@ -404,37 +407,130 @@ class FashionMNISTModelV3(nn.Module):
                       out_channels=hidden_features,
                       kernel_size=3,
                       stride=1,
-                      padding=1),
+                      padding=1
+                      ),
             nn.ReLU(),
             nn.Conv2d(in_channels=hidden_features,
                       out_channels=hidden_features,
                       kernel_size=3,
                       stride=1,
-                      padding=1),
+                      padding=1
+                      ),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=2)
         )
         self.classifier = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_features=hidden_features*0,
+            nn.Linear(in_features=490,
                       out_features=out_features)
         )
     def forward(self, x):
         # return self.classifier(self.conv_block_2(self.conv_block_1(x)))
         x = self.conv_block_1(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.conv_block_2(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.classifier(x)
-        print(x.shape)
+        # print(x.shape)
         return x
 
 torch.manual_seed(42)
 model_2 = FashionMNISTModelV3(in_features=1,
                               hidden_features=10,
                               out_features=10)
-print(model_2)
-            
+model_2.to(device)
+# print(model_2)
+# FashionMNISTModelV3(
+#   (conv_block_1): Sequential(
+#     (0): Conv2d(1, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (1): ReLU()
+#     (2): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (3): ReLU()
+#     (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+#   )
+#   (conv_block_2): Sequential(
+#     (0): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (1): ReLU()
+#     (2): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (3): ReLU()
+#     (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+#   )
+#   (classifier): Sequential(
+#     (0): Flatten(start_dim=1, end_dim=-1)
+#     (1): Linear(in_features=490, out_features=10, bias=True)
+#   )
+# )
+
+### Loss function & Optimizer for model 2/ acc func
+from helper_functions import accuracy_fn
+
+# Loss
+loss_func = nn.CrossEntropyLoss()
+
+# Optimizer
+optimizer = torch.optim.SGD(params=model_2.parameters(),
+                            lr=0.1)
+
+print('dwadwaad')
+### TRAIN/ TEST LOOP
+from timeit import default_timer as timer
+time_start = timer()
+
+epochs = 3
+for epoch in range(epochs):
+    ### Traing loop
+    print('huh')
+    model_2.train()
+    train_loss, train_acc = 0, 0
+    for batch, (X, y) in tqdm(enumerate(train_batches)):
+        X, y = X.to(device), y.to(device)
+        
+        y_logits = model_2(X)
+        
+        loss = loss_func(y_logits, y)
+        train_loss += loss
+        train_acc += accuracy_fn(y, y_logits.argmax(dim=1))
+        
+        optimizer.zero_grad()
+        
+        loss.backward()
+        
+        optimizer.step()
+        
+    train_loss = train_loss / len(train_batches)
+    train_acc = train_acc / len(train_batches)
+    
+    print(f"train loss: {train_loss} | train acc: {train_acc} | epoch: {epoch} ")
+
+time_end = timer()
+train_time(time_start, time_end)
+
+# %%
+### MODEL ACCURACY can be longer if trianed longer
+stats = eval_model(model=model_2,
+           data_loader=test_batches,
+           loss_func=loss_func,
+           accuracy_func=accuracy_fn,
+           device=device
+           )
+print(stats)
+# {'model_name': 'FashionMNISTModelV3',
+#  'loss': 0.3520268499851227,
+#  'acc': 88.23043130990415}
+
+
+### ======== BEST WAY TO OPTIMIZE ===== ###
+# I found out the best way to increase efficiency without changing epochs is by adding more hidden layers from changing it to 10 -> 30
+# It increased accuracy on average 3% while barely increasing training time by 0.5 of a second and secondly decreasing batch size to 16 also increases
+# Accuracy but instintivly it increases training time by upwards of 4-5 seconds on my hardware. Then changing kernal size didn't do much for performance nor
+# training time... minimal changes
+
+        
+        
+        
+    
+    
+    
             
         
 
@@ -454,3 +550,5 @@ print(model_2)
 
 
 
+
+# %%
