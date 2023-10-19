@@ -1,3 +1,4 @@
+# %%
 import torch 
 from torch import nn
 
@@ -53,13 +54,13 @@ torch.manual_seed(42)
 test_batches = DataLoader(
     batch_size=32,
     dataset=test_data,
-    shuffle=True
+    shuffle=False
 )
 
 train_features_batch, train_labels_batch = next(iter(train_batches))
 # print(len(train_features_batch))
 # 32
-
+torch.manual_seed(42)
 class MNISTTinyVGG(nn.Module):
     def __init__(self,
                  hidden_channels):
@@ -112,7 +113,9 @@ class MNISTTinyVGG(nn.Module):
         # print(x.shape)
         return x
 
+torch.manual_seed(42)
 Model_1 = MNISTTinyVGG(hidden_channels=40)
+torch.manual_seed(42)
 # Model_1(train_features_batch)
 # torch.Size([32, 10, 14, 14])
 # torch.Size([32, 10, 7, 7])
@@ -170,6 +173,7 @@ def train_loop(model,
 start_time = timer()
 
 epochs = 3
+torch.manual_seed(42)
 for epoch in range(epochs):
     train_loop(model=Model_1,
             loss=loss_func,
@@ -204,6 +208,45 @@ test_loop(model=Model_1,
            dataset=test_batches,
            device='cuda')
 
+# %%
+import torchmetrics, mlxtend
+
+# Redo predictions
+from tqdm.auto import tqdm
+torch.manual_seed(42)
+Model_1.eval()
+Model_1.to('cuda')
+guesses = []
+with torch.inference_mode():
+    for batch, (X, y) in tqdm(enumerate(test_batches)):
+        X, y = X.to('cuda'), y.to('cuda')
+        y_logits = Model_1(X)
+        
+        y_pred = torch.argmax(y_logits, dim=1)
+        guesses.append(y_pred)
+        
+    guesses=torch.cat(guesses).cpu()
+# print(len(guesses))
+# 10000
+print(test_data.targets[:10], guesses[:10])
+
+# Plot in confusion matrix
+from torchmetrics import ConfusionMatrix
+from mlxtend.plotting import plot_confusion_matrix
+
+# Setup confusion matrix 
+confmat = ConfusionMatrix(task="multiclass", num_classes=len(class_names))
+confmat_tensor = confmat(preds=guesses,
+                         target=test_data.targets)
+
+# Plot the confusion matrix
+plot_confusion_matrix(
+    conf_mat=confmat_tensor.numpy(),
+    class_names=class_names,
+    figsize=(9, 6)
+)
+
+
             
             
             
@@ -217,3 +260,4 @@ test_loop(model=Model_1,
         
     
     
+# %%
