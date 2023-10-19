@@ -100,7 +100,7 @@ class MNISTTinyVGG(nn.Module):
         
         self.SMBlock3 = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_features=490,
+            nn.Linear(in_features=1960,
                       out_features=len(class_names)),
         )
     def forward(self, x):
@@ -112,7 +112,7 @@ class MNISTTinyVGG(nn.Module):
         # print(x.shape)
         return x
 
-Model_1 = MNISTTinyVGG(hidden_channels=10)
+Model_1 = MNISTTinyVGG(hidden_channels=40)
 # Model_1(train_features_batch)
 # torch.Size([32, 10, 14, 14])
 # torch.Size([32, 10, 7, 7])
@@ -121,8 +121,8 @@ Model_1 = MNISTTinyVGG(hidden_channels=10)
 
 ### optimizer and loss ###
 loss_func = nn.CrossEntropyLoss()
-optimizer = torch.optim.SGD(params=Model_1.parameters(),
-                            lr=0.1)
+optimizer = torch.optim.Adam(params=Model_1.parameters(),
+                            lr=0.001)
 
 def accuracy_fn(y_true, y_pred):
     correct = torch.eq(y_true, y_pred).sum().item()
