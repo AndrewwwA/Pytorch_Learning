@@ -56,6 +56,10 @@ test_batches = DataLoader(
     shuffle=True
 )
 
+train_features_batch, train_labels_batch = next(iter(train_batches))
+# print(len(train_features_batch))
+# 32
+
 class MNISTTinyVGG(nn.Module):
     def __init__(self,
                  hidden_channels):
@@ -96,18 +100,120 @@ class MNISTTinyVGG(nn.Module):
         
         self.SMBlock3 = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_features=490,
+            nn.Linear(in_features=1960,
                       out_features=len(class_names)),
         )
     def forward(self, x):
         x = self.block1(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.block2(x)
-        print(x.shape)
+        # print(x.shape)
         x = self.SMBlock3(x)
-        print(x.shape)
+        # print(x.shape)
         return x
 
 Model_1 = MNISTTinyVGG(hidden_channels=10)
-# print(train_data[0][0].shape)
-# Model_1(train_data[0][0])
+# Model_1(train_features_batch)
+# torch.Size([32, 10, 14, 14])
+# torch.Size([32, 10, 7, 7])
+# torch.Size([32, 10])
+
+
+### optimizer and loss ###
+loss_func = nn.CrossEntropyLoss()
+optimizer = torch.optim.SGD(params=Model_1.parameters(),
+                            lr=0.1)
+
+def accuracy_fn(y_true, y_pred):
+    correct = torch.eq(y_true, y_pred).sum().item()
+    acc = (correct / len(y_pred)) * 100
+    return acc
+
+
+from timeit import default_timer as timer
+
+def train_time(start: float,
+               end: float):
+    total_time = end - start
+    print(f"{total_time:.5f} seconds")
+    
+
+def train_loop(model,
+            loss,
+            optimizer,
+            dataset,
+            device
+            ):
+    model = model.to(device)
+    
+    total_loss = 0
+    
+    for batch, (X, y) in enumerate(dataset):
+        X, y = X.to(device), y.to(device)
+        
+        model.train()
+        
+        y_logit = model(X)
+        
+        loss = loss_func(y_logit, y)
+        total_loss += loss
+        
+        optimizer.zero_grad()
+        
+        loss.backward()
+        
+        optimizer.step()
+        
+        if batch % 470 == 0 or batch == 1874:
+            print(f"Batch: {batch} / {len(dataset) - 1} | Loss overall: {loss / batch}")
+# %% 
+start_time = timer()
+
+epochs = 3
+for epoch in range(epochs):
+    train_loop(model=Model_1,
+            loss=loss_func,
+            optimizer=optimizer,
+            dataset=train_batches,
+            device='cuda')
+
+
+end_time = timer()
+print(f"Training Time: {train_time(start_time, end_time)}")
+# 27.71460 seconds on GPU (FOR ME)
+# 46.65879 seconds on CPU (FOR ME)
+
+# %%
+def test_loop(model,
+            dataset,
+            device):
+    model.eval()
+    
+    model = model.to(device)
+    with torch.inference_mode():
+        total_acc = 0
+        for X, y in dataset:
+            X, y = X.to(device), y.to(device)
+            y_logits = model(X)
+            y_pred = torch.argmax(y_logits, dim=1)
+            
+            total_acc += accuracy_fn(y, y_pred)
+        print(f"Accuracy: {total_acc / len(dataset)}")
+
+test_loop(model=Model_1,
+           dataset=test_batches,
+           device='cuda')
+
+            
+            
+            
+            
+            
+    
+
+        
+            
+            
+        
+    
+    
