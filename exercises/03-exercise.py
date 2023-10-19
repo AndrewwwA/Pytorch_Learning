@@ -100,7 +100,7 @@ class MNISTTinyVGG(nn.Module):
         
         self.SMBlock3 = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(in_features=1960,
+            nn.Linear(in_features=490,
                       out_features=len(class_names)),
         )
     def forward(self, x):
@@ -165,7 +165,7 @@ def train_loop(model,
         optimizer.step()
         
         if batch % 470 == 0 or batch == 1874:
-            print(f"Batch: {batch} / {len(dataset) - 1} | Loss overall: {loss / batch}")
+            print(f"Batch: {batch} / {len(dataset) - 1} | {loss}")
 # %% 
 start_time = timer()
 
