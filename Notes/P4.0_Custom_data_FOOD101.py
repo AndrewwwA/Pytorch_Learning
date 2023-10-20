@@ -54,5 +54,7 @@ img = Image.open(random_path)
 #Can show img.width, img.height, imge.class
 
 
+
+
     
     
