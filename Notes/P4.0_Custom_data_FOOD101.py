@@ -1,3 +1,4 @@
+# %%
 import torch
 from torch import nn
 
@@ -29,32 +30,83 @@ def walk_dir(dir_path):
 ### Visualizing a RANDOM image of each type ###
 from random import randrange
 from PIL import Image #(PiLLOW)
+import random
 
 
 # random.seed(42)
 # data\pizza_steak_shushi\pizza_steak_sushi
 
 # Get all image paths
-image_path_list = list(image_path.glob("*/*/*/*.jpg")) # Goes three layers down (each star) jpg
-print(image_path_list) 
+pathhh = Path("../data/pizza_steak_shushi")
+image_path_list = list(pathhh.glob("*/*/*/*.jpg")) # Goes three layers down (each star) jpg
+# print("The length of image_path_list is:", len(image_path_list))
+
 
 # print(image_path_list) # Prints every single image path (NOt showing because space) (SHOWN AS A ARRAY)
 
 # Pick range image path
-random_path = randrange(299)
+random_path = randrange(len(image_path_list)) 
+# print("The value of random_path is:", random_path)
 # print(random_path) # data\pizza_steak_shushi\pizza_steak_sushi\test\sushi\2394442.jpg always since random.seed()
 
 # Access class name from path name (said in directory)
-image_class = image_path_list[random_path]
+image = image_path_list[random_path]
 image_class = image_path_list[random_path].parent.stem
 # print(image_class) # sushi
 
+
 # Open image using PIL (PYTHON IMAGE LIBRARY)
-img = Image.open(random_path)
+img = Image.open(image)
+
 #Can show img.width, img.height, imge.class
+## SHOW USING MATPLOTLIB
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Turn the image into an array
+img_as_array = np.asarray(img)
+
+# Plot the image with matplotlib
+# plt.figure(figsize=(9, 6))
+# plt.imshow(img_as_array)
+# plt.title(f"Image class: {image_class} | Image shape: {img_as_array.shape} -> [height, width, color_channels]")
+# plt.axis(False);
 
 
+### Turning data into pytorch tensors ###
+# Currently can't be used to train a model, using 'torch.utils.data.Dataset' then 'torch.utils.data.Dataloader'
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 
+# Using torchvision.transforms to change JPG To tensors
+data_transform = transforms.Compose([
+    # Resize images to 64x64
+    transforms.Resize(size=(64, 64)),
+    # Flip the image randomly
+    transforms.RandomHorizontalFlip(p=0.5),
+    # Turn into tensor
+    transforms.ToTensor()
+])
+# print(data_transform(img))
+
+def plot_transed_images(image_path, transform, n=3, seed=None):
+    if seed:
+        random.seed(42)
+
+    random_image_paths = random.sample(image_path, k=n)
+    for image_path in random_image_paths:
+        with Image.open(image_path) as f:
+            fig, ax = plt.subplots(1, 2)
+            ax[0].imshow(f)
+            ax[0].set_title("Pre Transform")
+            transformed_image = transform(f).permute(1, 2, 0) # Change color channel to the end from (C, H, W) TO (H, W, C)
+            ax[1].imshow(transformed_image)
+            ax[1].set_title("transformed Image")
+            fig.suptitle(f"Class: {image_path.parent.stem}", fontsize=14)
+
+plot_transed_images(image_path_list, data_transform, n=3, seed=42)
 
     
     
+# %%
