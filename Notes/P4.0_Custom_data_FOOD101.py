@@ -131,3 +131,15 @@ test_data = datasets.ImageFolder(root=test_dir,
 #                RandomHorizontalFlip(p=0.5)
 #                ToTensor()
 #            )
+from torch.utils.data import DataLoader
+
+# Turn into dataloader/batch
+train_batches = DataLoader(batch_size=1,
+                         num_workers=os.cpu_count() - 1,
+                         shuffle=True,
+                         dataset=train_data,
+)
+test_batches = DataLoader(batch_size=1,
+                        num_workers=os.cpu_count() - 1,
+                        shuffle=False,
+                        dataset=test_data)
