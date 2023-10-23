@@ -7,12 +7,15 @@ devie = 'cuda' if torch.cuda.is_available() else 'cpu'
 # Building a food vision using a subset of FOOD101 dataset \
     
 from pathlib import Path
-image_path = Path("data/pizza_steak_shushi")
+data_path = Path('../data')
+image_path = data_path / "pizza_steak_shushi"
 
 # EXPLORING DATASET
+print(data_path)
 import os
 def walk_dir(dir_path):
     """Returns contents of dir_peth"""
+    print('test')
     for dirpath, dirnames, filenames in os.walk(dir_path):
         print(f"there are {len(dirnames)} directories and {len(filenames)} images in {dirpath} "),
 # walk_dir(image_path)
@@ -37,8 +40,8 @@ import random
 # data\pizza_steak_shushi\pizza_steak_sushi
 
 # Get all image paths
-pathhh = Path("../data/pizza_steak_shushi")
-image_path_list = list(pathhh.glob("*/*/*/*.jpg")) # Goes three layers down (each star) jpg
+# pathhh = Path("../data/pizza_steak_shushi")
+image_path_list = list(image_path.glob("*/*/*.jpg")) # Goes three layers down (each star) jpg
 # print("The length of image_path_list is:", len(image_path_list))
 
 
@@ -90,9 +93,9 @@ data_transform = transforms.Compose([
 ])
 # print(data_transform(img))
 
-def plot_transed_images(image_path, transform, n=3, seed=None):
+def plot_transed_images(image_path, transform, n=0, seed=None):
     if seed:
-        random.seed(42)
+        random.seed(seed)
 
     random_image_paths = random.sample(image_path, k=n)
     for image_path in random_image_paths:
@@ -107,6 +110,24 @@ def plot_transed_images(image_path, transform, n=3, seed=None):
 
 plot_transed_images(image_path_list, data_transform, n=3, seed=42)
 
-    
-    
-# %%
+### Loading image data using 'torchvision.datasets.ImageFolder' - creates datasets
+from torchvision import datasets
+# print(Path('data/pizza_steak_sushi').)
+train_dir, test_dir = image_path / 'train', image_path / 'test'
+train_data = datasets.ImageFolder(root=train_dir,
+                                  transform=data_transform, #What to do to the data (FUNCTION I CREATED),
+                                  target_transform=None
+                                  )
+test_data = datasets.ImageFolder(root=test_dir,
+                                transform=data_transform,
+                                target_transform=None)
+# print(train_data)
+# Dataset ImageFolder
+#     Number of datapoints: 225
+#     Root location: ..\data\pizza_steak_shushi\train
+#     StandardTransform
+# Transform: Compose(
+#                Resize(size=(64, 64), interpolation=bilinear, max_size=None, antialias=warn)
+#                RandomHorizontalFlip(p=0.5)
+#                ToTensor()
+#            )
