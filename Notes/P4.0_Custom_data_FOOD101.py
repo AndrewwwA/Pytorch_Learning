@@ -143,3 +143,103 @@ test_batches = DataLoader(batch_size=1,
                         num_workers=os.cpu_count() - 1,
                         shuffle=False,
                         dataset=test_data)
+
+### Creating TinyVGG model without data augmentation
+simple_transform = transforms.Compose([
+    transforms.Resize(size=(64, 64)),
+    transforms.ToTensor()
+])
+### NON AUGMENT IMAGEFOLDER
+simple_train_data = datasets.ImageFolder(
+    root=train_dir,
+    transform=simple_transform,
+    target_transform=None
+)
+simple_test_data = datasets.ImageFolder(
+    root=test_dir,
+    transform=simple_transform,
+    target_transform=None
+)
+### NON AUGMENT Batch
+simple_train_batches = DataLoader(batch_size=32,
+                                  num_workers=os.cpu_count() - 1,
+                                  shuffle=True,
+                                  dataset=simple_train_data)
+simple_test_batches = DataLoader(batch_size=32,
+                                 num_workers=os.cpu_count() - 1,
+                                 dataset=simple_test_data,
+                                 shuffle=False)
+
+### TinyVGG model
+class TinyVGG(nn.Module):
+    def __init__(self, input, hidden_units, output):
+        super().__init__()
+        self.convLayer1 = nn.Sequential(
+            nn.Conv2d(
+                in_channels=input,
+                out_channels=hidden_units,
+                kernel_size=3,
+                padding=1,
+                stride=1
+            ),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=hidden_units,
+                out_channels=hidden_units,
+                kernel_size=3,
+                padding=1,
+                stride=1
+            ),
+            nn.ReLU(),
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            )
+            )
+        self.convLayer2 = nn.Sequential(
+                        nn.Conv2d(
+                in_channels=hidden_units,
+                out_channels=hidden_units,
+                kernel_size=3,
+                padding=1,
+                stride=1
+            ),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=hidden_units,
+                out_channels=hidden_units,
+                kernel_size=3,
+                padding=1,
+                stride=1
+            ),
+            nn.ReLU(),
+            nn.MaxPool2d(
+                kernel_size=2,
+                stride=2
+            )
+            )
+        self.classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(
+                in_features=hidden_units,
+                out_features=3
+            )
+        )
+        
+    def forward(self, x):
+        x = self.convLayer1(x)
+        print(x)
+        x = self.convLayer2(x)
+        print(x)
+        x = self.classifier(x)
+        print(x)
+        return x
+        # reuturn self.classifier(self.convLayer2(self.convLayer1(x)))
+
+torch.manual_seed(42)
+model_0 = TinyVGG(input=3, # color channels
+                  hidden_units=10,
+                  output=3 # Num of options in classifier
+                  ).to('cuda')
+print(model_0)
+
