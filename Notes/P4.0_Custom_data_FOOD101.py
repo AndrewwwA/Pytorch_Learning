@@ -221,25 +221,44 @@ class TinyVGG(nn.Module):
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Linear(
-                in_features=hidden_units,
+                in_features=256,
                 out_features=3
             )
         )
         
     def forward(self, x):
-        x = self.convLayer1(x)
-        print(x)
-        x = self.convLayer2(x)
-        print(x)
-        x = self.classifier(x)
-        print(x)
-        return x
-        # reuturn self.classifier(self.convLayer2(self.convLayer1(x)))
+        # x = self.convLayer1(x)
+        # print(x)
+        # x = self.convLayer2(x)
+        # print(x)
+        # x = self.classifier(x)
+        # print(x)
+        # return x
+        return self.classifier(self.convLayer2(self.convLayer1(x)))
 
 torch.manual_seed(42)
 model_0 = TinyVGG(input=3, # color channels
                   hidden_units=10,
                   output=3 # Num of options in classifier
                   ).to('cuda')
-print(model_0)
-
+# print(model_0)
+# TinyVGG(
+#   (convLayer1): Sequential(
+#     (0): Conv2d(3, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (1): ReLU()
+#     (2): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (3): ReLU()
+#     (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+#   )
+#   (convLayer2): Sequential(
+#     (0): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (1): ReLU()
+#     (2): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+#     (3): ReLU()
+#     (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
+#   )
+#   (classifier): Sequential(
+#     (0): Flatten(start_dim=1, end_dim=-1)
+#     (1): Linear(in_features=256, out_features=3, bias=True)
+#   )
+# )
