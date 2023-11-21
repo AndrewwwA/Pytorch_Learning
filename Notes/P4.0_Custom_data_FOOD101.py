@@ -162,11 +162,9 @@ simple_test_data = datasets.ImageFolder(
 )
 ### NON AUGMENT Batch
 simple_train_batches = DataLoader(batch_size=32,
-                                  num_workers=os.cpu_count() - 1,
                                   shuffle=True,
                                   dataset=simple_train_data)
 simple_test_batches = DataLoader(batch_size=32,
-                                 num_workers=os.cpu_count() - 1,
                                  dataset=simple_test_data,
                                  shuffle=False)
 
@@ -179,7 +177,7 @@ class TinyVGG(nn.Module):
                 in_channels=input,
                 out_channels=hidden_units,
                 kernel_size=3,
-                padding=1,
+                padding=0,
                 stride=1
             ),
             nn.ReLU(),
@@ -187,7 +185,7 @@ class TinyVGG(nn.Module):
                 in_channels=hidden_units,
                 out_channels=hidden_units,
                 kernel_size=3,
-                padding=1,
+                padding=0,
                 stride=1
             ),
             nn.ReLU(),
@@ -201,7 +199,7 @@ class TinyVGG(nn.Module):
                 in_channels=hidden_units,
                 out_channels=hidden_units,
                 kernel_size=3,
-                padding=1,
+                padding=0,
                 stride=1
             ),
             nn.ReLU(),
@@ -209,7 +207,7 @@ class TinyVGG(nn.Module):
                 in_channels=hidden_units,
                 out_channels=hidden_units,
                 kernel_size=3,
-                padding=1,
+                padding=0,
                 stride=1
             ),
             nn.ReLU(),
@@ -221,16 +219,16 @@ class TinyVGG(nn.Module):
         self.classifier = nn.Sequential(
             nn.Flatten(),
             nn.Linear(
-                in_features=256,
+                in_features=1690,
                 out_features=3
             )
         )
         
     def forward(self, x):
         # x = self.convLayer1(x)
-        # print(x)
+        # print(x.shape)
         # x = self.convLayer2(x)
-        # print(x)
+        # print(x.shape)
         # x = self.classifier(x)
         # print(x)
         # return x
@@ -242,23 +240,49 @@ model_0 = TinyVGG(input=3, # color channels
                   output=3 # Num of options in classifier
                   ).to('cuda')
 # print(model_0)
-# TinyVGG(
-#   (convLayer1): Sequential(
-#     (0): Conv2d(3, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-#     (1): ReLU()
-#     (2): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-#     (3): ReLU()
-#     (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-#   )
-#   (convLayer2): Sequential(
-#     (0): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-#     (1): ReLU()
-#     (2): Conv2d(10, 10, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
-#     (3): ReLU()
-#     (4): MaxPool2d(kernel_size=2, stride=2, padding=0, dilation=1, ceil_mode=False)
-#   )
-#   (classifier): Sequential(
-#     (0): Flatten(start_dim=1, end_dim=-1)
-#     (1): Linear(in_features=256, out_features=3, bias=True)
-#   )
-# )
+
+### TEST
+# dummy_data = torch.randn(3, 64, 64).to('cuda')
+# dummy_data, label = next(iter(simple_train_batches))
+# print(model_0(dummy_data.to('cuda')))
+
+# %%
+### Torchinfo to view params and other important information
+import torchinfo 
+from torchinfo import summary
+
+# view specs of model
+# summary(model_0, input_size=[1 #Batch of a singular image
+#                              , 3, 64, 64])
+
+# ==========================================================================================
+# Layer (type:depth-idx)                   Output Shape              Param #
+# ==========================================================================================
+# TinyVGG                                  [1, 3]                    --
+# ├─Sequential: 1-1                        [1, 10, 30, 30]           --
+# │    └─Conv2d: 2-1                       [1, 10, 62, 62]           280
+# │    └─ReLU: 2-2                         [1, 10, 62, 62]           --
+# │    └─Conv2d: 2-3                       [1, 10, 60, 60]           910
+# │    └─ReLU: 2-4                         [1, 10, 60, 60]           --
+# │    └─MaxPool2d: 2-5                    [1, 10, 30, 30]           --
+# ├─Sequential: 1-2                        [1, 10, 13, 13]           --
+# │    └─Conv2d: 2-6                       [1, 10, 28, 28]           910
+# │    └─ReLU: 2-7                         [1, 10, 28, 28]           --
+# │    └─Conv2d: 2-8                       [1, 10, 26, 26]           910
+# │    └─ReLU: 2-9                         [1, 10, 26, 26]           --
+# │    └─MaxPool2d: 2-10                   [1, 10, 13, 13]           --
+# ├─Sequential: 1-3                        [1, 3]                    --
+# │    └─Flatten: 2-11                     [1, 1690]                 --
+# │    └─Linear: 2-12                      [1, 3]                    5,073
+# ==========================================================================================
+# Total params: 8,083
+# Trainable params: 8,083
+# Non-trainable params: 0
+# Total mult-adds (M): 5.69
+# ==========================================================================================
+# Input size (MB): 0.05
+# Forward/backward pass size (MB): 0.71
+# Params size (MB): 0.03
+# Estimated Total Size (MB): 0.79
+# ==========================================================================================
+
