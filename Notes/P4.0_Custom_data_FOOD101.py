@@ -135,12 +135,10 @@ from torch.utils.data import DataLoader
 
 # Turn into dataloader/batch
 train_batches = DataLoader(batch_size=1,
-                         num_workers=os.cpu_count() - 1,
                          shuffle=True,
                          dataset=train_data,
 )
 test_batches = DataLoader(batch_size=1,
-                        num_workers=os.cpu_count() - 1,
                         shuffle=False,
                         dataset=test_data)
 
@@ -287,9 +285,16 @@ from torchinfo import summary
 # ==========================================================================================
 
 ### Train and test step ###
-def train_step(model: torch.nn,Module,
+loss_func = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(lr=0.01, params=model_0.parameters())
+
+model_0 = TinyVGG(input=3,
+                  hidden_units=10,
+                  output=len(train_data.classes)).to('cuda')
+
+def train_step(model,
                dataloader: torch.utils.data.DataLoader,
-               loss_fn: torch.nn.Module,
+               loss_fn,
                optimizer: torch.optim.Optimizer,
                device = 'cpu'):
     
@@ -346,4 +351,36 @@ def test_step(model: torch.nn.Module,
         test_loss = test_loss / len(dataloader)
         test_acc = test_acc / len(dataloader)
         return test_loss, test_acc
-            
+
+
+### Train function to combine trainstep and teststep
+from tqdm.auto import tqdm
+
+def train(model,
+          test_dataloader,
+          train_dataloader,
+          loss_fn,
+          optimizer,
+          epochs,
+          device='cpu'):
+    for epochs in tqdm(range(epochs)):
+        train_loss, train_acc = train_step(model=model,
+                   dataloader= train_dataloader,
+                   loss_fn=loss_fn,
+                   optimizer=optimizer,
+                   device=device)
+        
+        test_loss, test_acc = test_step(model,
+                                        dataloader=test_dataloader,
+                                        loss_fn=loss_fn,
+                                        device=device)
+        print(f'Train Loss: {train_loss:.3f} | train_acc: {train_acc:.3f} | test loss: {test_loss:.3f} | test acc: {test_acc:.3f}')
+
+
+train(model=model_0,
+      test_dataloader=test_batches,
+      train_dataloader=train_batches,
+      loss_fn=loss_func,
+      optimizer=optimizer,
+      epochs=5,
+      device='cuda',)
