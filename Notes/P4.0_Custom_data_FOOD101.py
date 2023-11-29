@@ -284,13 +284,13 @@ from torchinfo import summary
 # Estimated Total Size (MB): 0.79
 # ==========================================================================================
 
-### Train and test step ###
-loss_func = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(lr=0.01, params=model_0.parameters())
-
 model_0 = TinyVGG(input=3,
                   hidden_units=10,
                   output=len(train_data.classes)).to('cuda')
+
+### Train and test step ###
+loss_func = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(lr=0.001, params=model_0.parameters())
 
 def train_step(model,
                dataloader: torch.utils.data.DataLoader,
@@ -309,7 +309,7 @@ def train_step(model,
         y_logits = model(X)
         
         loss = loss_fn(y_logits, y)
-        train_loss += 0
+        train_loss += loss
         
         optimizer.zero_grad()
         
@@ -323,6 +323,7 @@ def train_step(model,
         
     train_loss = train_loss / len(dataloader)
     train_acc = train_acc / len(dataloader)
+    print('dwadwada', train_acc)
     return train_acc, train_loss
 
 def test_step(model: torch.nn.Module,
@@ -364,7 +365,7 @@ def train(model,
           epochs,
           device='cpu'):
     for epochs in tqdm(range(epochs)):
-        train_loss, train_acc = train_step(model=model,
+        train_acc, train_loss = train_step(model=model,
                    dataloader= train_dataloader,
                    loss_fn=loss_fn,
                    optimizer=optimizer,
@@ -376,6 +377,10 @@ def train(model,
                                         device=device)
         print(f'Train Loss: {train_loss:.3f} | train_acc: {train_acc:.3f} | test loss: {test_loss:.3f} | test acc: {test_acc:.3f}')
 
+# Timer
+from timeit import default_timer as timer
+start_Time = timer()
+
 
 train(model=model_0,
       test_dataloader=test_batches,
@@ -384,3 +389,6 @@ train(model=model_0,
       optimizer=optimizer,
       epochs=5,
       device='cuda',)
+
+end_Time = timer()
+print(f"Training time: {end_Time-start_Time:.3f}")
